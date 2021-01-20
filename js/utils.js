@@ -1,10 +1,9 @@
-function renderBoard(mat) {
-    console.log('rendering');
+function renderBoard(board) {
     var strHTML = '<table border="0"><tbody>';
-    for (var i = 0; i < mat.length; i++) {
+    for (var i = 0; i < board[0].length; i++) {
       strHTML += '<tr>';
-      for (var j = 0; j < mat[0].length; j++) {
-        var cell = mat[i][j];
+      for (var j = 0; j < board[0].length; j++) {
+        var cell = board[i][j];
         var cellType = (cell.isMine) ? MINE : cell.minesAroundCount;
         strHTML += `<td class="cell cell${i}-${j}">${cellType}</td>`
       }
@@ -14,9 +13,6 @@ function renderBoard(mat) {
     var elContainer = document.querySelector('.board-container');
     elContainer.innerHTML = strHTML;  
 }
-
-
-
 
 function getRandomInteger(min, max) {
     min = Math.ceil(min);

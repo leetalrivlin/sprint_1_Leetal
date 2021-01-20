@@ -32,13 +32,15 @@ function buildBoard(size) {
     }
   }
   // Placing mines
-  board = getRandMines(board, size);
+  getRandMines(board, size);
+  // Checking for mines neighbors
+  setMinesNegsCount(board, size);
+
   console.table(board);
   return board;
 }
 
 function getRandMines(board, size) {
-  var mines = [];
   for (var x = 0; x < gLevel.MINES; x++) {
     var minePosI = getRandomInteger(0, size);
     var minePosJ = getRandomInteger(0, size);
@@ -48,11 +50,36 @@ function getRandMines(board, size) {
       minePosJ = getRandomInteger(0, size);
     }
     board[minePosI][minePosJ].isMine = true;
-
-    // mines array is for me- delete afterwords!!!
-    var mine = { i: minePosI, j: minePosJ };
-    mines.push(mine);
   }
-  console.log('mines', mines);
-  return board
+  return board;
+}
+
+function setMinesNegsCount(board, size) {
+  //Go through every cell
+  for (var i = 0; i < size; i++) {
+    for (var j = 0; j < size; j++) {
+      var currI = i;
+      var currJ = j;
+      var minesCount = minesNegsCount(board, size, currI, currJ);
+      board[i][j].minesAroundCount = minesCount;
+    }
+  }
+}
+// check neighbors
+function minesNegsCount(board, size, currI, currJ) {
+  var MinesNegsCount = 0;
+  for (var i = currI - 1; i <= currI + 1; i++) {
+    if (i < 0 || i > size -1) continue;
+    for (var j = currJ - 1; j <= currJ + 1; j++) {
+      if (j < 0 || j > size -1) continue;
+      var neighbor = board[i][j];
+      
+      if (i === currI && j === currJ) continue;
+      console.log('for curr:',currI,currJ,'neighbor:',i,j);
+      if (neighbor.isMine) {
+        MinesNegsCount++;
+      }
+    }
+  }
+  return MinesNegsCount;
 }
