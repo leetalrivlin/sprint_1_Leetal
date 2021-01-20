@@ -1,5 +1,6 @@
 'use strict';
 const MINE = '*';
+const EMPTY = '';
 
 var gBoard;
 var gLevel = {
@@ -69,13 +70,12 @@ function setMinesNegsCount(board, size) {
 function minesNegsCount(board, size, currI, currJ) {
   var MinesNegsCount = 0;
   for (var i = currI - 1; i <= currI + 1; i++) {
-    if (i < 0 || i > size -1) continue;
+    if (i < 0 || i > size - 1) continue;
     for (var j = currJ - 1; j <= currJ + 1; j++) {
-      if (j < 0 || j > size -1) continue;
+      if (j < 0 || j > size - 1) continue;
       var neighbor = board[i][j];
-      
+
       if (i === currI && j === currJ) continue;
-      console.log('for curr:',currI,currJ,'neighbor:',i,j);
       if (neighbor.isMine) {
         MinesNegsCount++;
       }
@@ -83,3 +83,22 @@ function minesNegsCount(board, size, currI, currJ) {
   }
   return MinesNegsCount;
 }
+
+function renderBoard(board) {
+  var strHTML = '<table><tbody>';
+  for (var i = 0; i < board[0].length; i++) {
+    strHTML += '<tr>';
+    for (var j = 0; j < board[0].length; j++) {
+      var cell = board[i][j];
+      var cellType = cell.isMine ? MINE : cell.minesAroundCount;
+      if (!cell.isMine && cell.minesAroundCount === 0) cellType = EMPTY;
+      strHTML += `<td class="cell cell${i}-${j}" cellClicked(this, i, j)>${cellType}</td>`;
+    }
+    strHTML += '</tr>';
+  }
+  strHTML += '</tbody></table>';
+  var elContainer = document.querySelector('.board-container');
+  elContainer.innerHTML = strHTML;
+}
+
+function cellClicked(elCell, i, j) {}
