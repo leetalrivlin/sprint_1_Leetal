@@ -5,6 +5,7 @@ body {
 .level-btn {
   width: 200px;
   height: 30px;
+  cursor: pointer;
 }
 .smiley {
   width: 50px;
@@ -17,13 +18,13 @@ body {
   outline-style: none;
   cursor: pointer;
 }
-.clock-and-flags {
+.timer-and-flags {
   float: left;
   margin-left: 20px;
   text-align: left;
   position: fixed;
 }
-.clock, .flags-counter {
+.timer, .flags-counter {
   font-family: "Orbitron", sans-serif;
   color: #000000;
   font-size: 2rem;
@@ -36,23 +37,23 @@ body {
   text-align: center;
 }
 table {
-  width: 200px;
-  height: 200px;
   margin-left: auto;
   margin-right: auto;
+  padding: 0;
 }
 table,
-td {
+.cell {
   border: 1px solid black;
   border-collapse: collapse;
-  background-color: rgb(190, 190, 190);
 }
 .cell {
   width: 20px;
   height: 20px;
   text-align: center;
   font-size: 1.5em;
+  background-color: rgb(190, 190, 190);
 }
-.cellCover {
+.cell-cover {
   background-color: rgb(85, 83, 83);
+  box-shadow: inset -2px -2px 2px 1px #343434;
 }

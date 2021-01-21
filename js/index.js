@@ -13,6 +13,7 @@ var gLevel = {
 var gBoard;
 var gGame;
 var gMines;
+var gTimerInterval;
 
 function initGame() {
   gGame = {
@@ -26,6 +27,7 @@ function initGame() {
 }
 
 function changeLevel(elLevelBtn) {
+  resetTimer();
   var levelSize = elLevelBtn.dataset.size;
   var levelMinesAmount = elLevelBtn.dataset.mines;
   gLevel.SIZE = levelSize;
@@ -109,7 +111,7 @@ function renderBoard(board) {
       var cell = board[i][j];
       var cellType = cell.isMine ? MINE : cell.minesAroundCount;
       if (!cell.isMine && cell.minesAroundCount === 0) cellType = EMPTY;
-      strHTML += `<td class="cell cell-${i}-${j} cellCover" data-celltype="${cellType}" onmousedown="cellClicked(this, ${i}, ${j}, event)"></td>`;
+      strHTML += `<td class="cell cell-${i}-${j} cell-cover" data-celltype="${cellType}" onmousedown="cellClicked(this, ${i}, ${j}, event)"></td>`;
     }
     strHTML += '</tr>';
   }
@@ -127,9 +129,29 @@ function renderBoard(board) {
   });
 }
 
+function startTimer() {
+  var startTime = Date.now();
+  gTimerInterval = setInterval(getSecsPassed, 1000, startTime);
+}
+
+function getSecsPassed(startTime) {
+  gGame.secsPassed = parseInt((Date.now() - startTime) / 1000);
+  var elTimer = document.querySelector('.timer');
+  var printedTime = get3Digits(gGame.secsPassed);
+  elTimer.innerText = printedTime;
+}
+
+function resetTimer() {
+  gGame.secsPassed = 0;
+  var elTimer = document.querySelector('.timer');
+  elTimer.innerText = '000';
+}
+
 function cellClicked(elCell, i, j, e) {
   if (!gGame.isOn) return;
-  // var startTime = Date.now();
+  var elCoveredCells = document.querySelectorAll('.cell-cover');
+  var cellsAmount = gLevel.SIZE ** 2;
+  if (elCoveredCells.length === cellsAmount) startTimer();
 
   switch (e.button) {
     case 2: // right click
@@ -168,7 +190,7 @@ function cellReveales(elCell, i, j) {
   gBoard[i][j].isShown = true;
   gGame.shownCount++;
   // DOM
-  elCell.classList.remove('cellCover');
+  elCell.classList.remove('cell-cover');
   var cellType = elCell.dataset.celltype;
   elCell.innerText = cellType;
   checkGameOver(i, j);
@@ -176,6 +198,7 @@ function cellReveales(elCell, i, j) {
 
 function checkGameOver(i, j) {
   var cellsAmount = gLevel.SIZE ** 2;
+  //When loosing
   if (gBoard[i][j].isMine && gBoard[i][j].isMarked === false) {
     for (var x = 0; x < gMines.length; x++) {
       var otherMine = gMines[x];
@@ -183,26 +206,30 @@ function checkGameOver(i, j) {
       var elOtherMine = document.querySelector(
         `.cell-${otherMine.i}-${otherMine.j}`
       );
-      elOtherMine.classList.remove('cellCover');
+      elOtherMine.classList.remove('cell-cover');
       elOtherMine.innerText = elOtherMine.dataset.celltype;
     }
     console.log('Game over! you loose');
+
+    clearInterval(gTimerInterval);
+    gTimerInterval = null;
+
     var elSmiley = document.querySelector('.smiley');
     elSmiley.innerText = LOOSE;
     gGame.isOn = false;
+    // When winning
   } else if (gGame.shownCount + gGame.markedCount === cellsAmount) {
-    console.log('You win!');
+    console.log("You win! You're the bomb!");
+
+    clearInterval(gTimerInterval);
+    gTimerInterval = null;
+
     var elSmiley = document.querySelector('.smiley');
     elSmiley.innerText = WIN;
   }
 }
 
 function restart() {
-  gGame = {
-    isOn: true,
-    shownCount: 0,
-    markedCount: 0,
-    secsPassed: 0,
-  };
+  resetTimer();
   initGame();
 }
