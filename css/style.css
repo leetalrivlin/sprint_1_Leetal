@@ -1,7 +1,10 @@
 body {
-  background-color: lightcoral;
+  background-color: rgb(31, 30, 30);
   font-family: Arial, Helvetica, sans-serif;
   text-align: center;
+}
+h1 {
+  color: rgb(94, 235, 94);
 }
 .level-btn {
   width: 100px;
@@ -20,7 +23,7 @@ body {
   font-size: 40px;
   text-align: center;
   display: block;
-  margin: 20px auto 0 auto;
+  margin: 10px auto 0 auto;
   padding: 0;
   border: none;
   text-decoration: none;
@@ -28,24 +31,28 @@ body {
   cursor: pointer;
   background: none;
 }
-.timer-and-flags {
-  font-family: "Orbitron", sans-serif;
+.sentence {
+  margin: 0;
+  visibility: hidden;
+  color: rgb(94, 235, 94);
+}
+.timer-flags-lives {
+  font-family: 'Orbitron', sans-serif;
   text-align: center;
+  color: rgb(94, 235, 94);
 }
 .timer {
-  color: #000000;
   font-size: 1.7rem;
-  margin: 10px 0 5px 0;
+  margin: 5px 0 5px 0;
   text-align: center;
 }
 .flags-counter,
 .lives {
-  font-size: 1.4rem;
-  margin: 10px 0 5px 0;
+  font-size: 1.2rem;
+  margin: 5px 0 5px 0;
 }
 .board-container {
-  margin-left: auto;
-  margin-right: auto;
+  margin: 20px auto 50px auto;
   text-align: center;
 }
 table {
@@ -70,7 +77,4 @@ table,
 .cell-cover {
   background-color: rgb(85, 83, 83);
   box-shadow: inset -2px -2px 2px 1px #343434;
-}
-.red {
-  background-color: red;
 }

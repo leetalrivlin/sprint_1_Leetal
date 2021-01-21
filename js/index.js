@@ -28,6 +28,8 @@ function initGame() {
   };
   gBoard = buildBoard(gLevel.SIZE);
   renderBoard(gBoard, gLevel.SIZE);
+  var elSentence = document.querySelector('.sentence');
+  elSentence.style.visibility = 'hidden';
 }
 
 function changeLevel(elLevelBtn) {
@@ -65,7 +67,7 @@ function getRandMines(board, size) {
   for (var x = 0; x < gLevel.MINES; x++) {
     var minePosI = getRandomInteger(0, size);
     var minePosJ = getRandomInteger(0, size);
-    // Checking that the mine pos is not already with a mine or first clicked////
+    // Checking that the mine pos is not already with a mine
     while (board[minePosI][minePosJ].isMine) {
       minePosI = getRandomInteger(0, size);
       minePosJ = getRandomInteger(0, size);
@@ -85,7 +87,6 @@ function setMinesNegsCount(board, size) {
       var currJ = j;
       var minesCount = minesNegsCount(board, size, currI, currJ);
       board[i][j].minesAroundCount = minesCount;
-      // console.log('board[i][j]', board[i][j], 'minesCount', minesCount);
     }
   }
 }
@@ -94,7 +95,6 @@ function minesNegsCount(board, size, currI, currJ) {
   var MinesNegsCount = 0;
   var negs = getNegs(size, currI, currJ);
   for (var x = 0; x < negs.length; x++) {
-    //Model
     var currNeg = negs[x];
     var neg = board[currNeg.i][currNeg.j];
     if (neg.isMine) {
@@ -266,22 +266,18 @@ function checkGameOver(i, j) {
   //When loosing first three times
   if (gBoard[i][j].isMine && gBoard[i][j].isMarked === false) {
     // check lives
-    console.log('Lives left before:', gGame.lives);
     if (gGame.lives > 1) {
       gGame.lives--;
+
       var elLive = document.querySelector('.lives span');
       elLive.innerText = gGame.lives;
-
-      console.log("You've stepped on a bomb");
-      console.log('Lives left after:', gGame.lives);
 
       var elSmiley = document.querySelector('.smiley');
       elSmiley.innerText = OOPS;
       setTimeout(function () {
         elSmiley.innerText = SMILEY;
-      }, 300);
+      }, 900);
       return;
-
     } else if (gGame.lives === 1) {
       gGame.lives--;
       // reveale all other mines
@@ -301,16 +297,20 @@ function checkGameOver(i, j) {
       var elSmiley = document.querySelector('.smiley');
       elSmiley.innerText = LOOSE;
       gGame.isOn = false;
-      console.log('Game over! you loose!');
       var elLive = document.querySelector('.lives span');
       elLive.innerText = gGame.lives;
+      var elSentence = document.querySelector('.sentence');
+      elSentence.innerText = 'Game over! you loose!';
+      elSentence.style.visibility = 'visible';
     }
 
     // When winning
   } else if (gGame.shownCount + gGame.markedCount === cellsAmount) {
-    console.log("You win! You're the bomb!");
+    var elSentence = document.querySelector('.sentence');
+    elSentence.innerText = "You win! You're the bomb!";
+    elSentence.style.visibility = 'visible';
 
-    clearInterval(gTimerInterval); // doesnt stop, check why!!!
+    clearInterval(gTimerInterval);
     gTimerInterval = null;
 
     var elSmiley = document.querySelector('.smiley');
