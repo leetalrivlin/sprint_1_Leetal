@@ -1,10 +1,13 @@
 'use strict';
-const MINE = '*';
+const MINE = '💣';
 const EMPTY = '';
-const FLAG = '^';
+const ONE = '1️⃣';
+const TWO = '2️⃣';
+const FLAG = '🚩';
 const SMILEY = '🙂';
 const WIN = '🥳';
 const LOOSE = '😫';
+const OOPS = '🤪';
 
 var gLevel = {
   SIZE: 4,
@@ -21,9 +24,10 @@ function initGame() {
     shownCount: 0,
     markedCount: 0,
     secsPassed: 0,
+    lives: 3,
   };
   gBoard = buildBoard(gLevel.SIZE);
-  renderBoard(gBoard);
+  renderBoard(gBoard, gLevel.SIZE);
 }
 
 function changeLevel(elLevelBtn) {
@@ -53,7 +57,6 @@ function buildBoard(size) {
   // Checking for mines neighbors
   setMinesNegsCount(board, size);
 
-  console.table(board);
   return board;
 }
 
@@ -73,7 +76,7 @@ function getRandMines(board, size) {
   }
   return board;
 }
-
+// Sets the number on the cell
 function setMinesNegsCount(board, size) {
   //Go through every cell in board
   for (var i = 0; i < size; i++) {
@@ -82,10 +85,11 @@ function setMinesNegsCount(board, size) {
       var currJ = j;
       var minesCount = minesNegsCount(board, size, currI, currJ);
       board[i][j].minesAroundCount = minesCount;
+      // console.log('board[i][j]', board[i][j], 'minesCount', minesCount);
     }
   }
 }
-// check for mines neighbors
+// Checks for mines neighbors
 function minesNegsCount(board, size, currI, currJ) {
   var MinesNegsCount = 0;
   var negs = getNegs(size, currI, currJ);
@@ -116,14 +120,21 @@ function getNegs(size, currI, currJ) {
   return neighbors;
 }
 
-function renderBoard(board) {
+function renderBoard(board, size) {
   var strHTML = '<table><tbody>';
-  for (var i = 0; i < board[0].length; i++) {
+  for (var i = 0; i < size; i++) {
     strHTML += '<tr>';
-    for (var j = 0; j < board[0].length; j++) {
+    for (var j = 0; j < size; j++) {
       var cell = board[i][j];
-      var cellType = cell.isMine ? MINE : cell.minesAroundCount;
-      if (!cell.isMine && cell.minesAroundCount === 0) cellType = EMPTY;
+      if (cell.isMine) {
+        var cellType = MINE;
+      } else if (!cell.isMine && cell.minesAroundCount === 0) {
+        cellType = EMPTY;
+      } else if (!cell.isMine && cell.minesAroundCount === 1) {
+        cellType = ONE;
+      } else if (!cell.isMine && cell.minesAroundCount === 2) {
+        cellType = TWO;
+      }
       strHTML += `<td class="cell cell-${i}-${j} cell-cover" data-celltype="${cellType}" onmousedown="cellClicked(this, ${i}, ${j}, event)"></td>`;
     }
     strHTML += '</tr>';
@@ -132,10 +143,12 @@ function renderBoard(board) {
 
   var elContainer = document.querySelector('.board-container');
   elContainer.innerHTML = strHTML;
-  var elFlagscounter = document.querySelector('.flags-counter');
+  var elFlagscounter = document.querySelector('.flags-counter span');
   elFlagscounter.innerText = gLevel.MINES;
   var elSmiley = document.querySelector('.smiley');
   elSmiley.innerText = SMILEY;
+  var elLive = document.querySelector('.lives span');
+  elLive.innerText = gGame.lives;
 
   elContainer.addEventListener('contextmenu', (e) => {
     e.preventDefault();
@@ -160,6 +173,7 @@ function resetTimer() {
   elTimer.innerText = '000';
 }
 
+// On mouse click
 function cellClicked(elCell, i, j, e) {
   if (!gGame.isOn) return;
   var elCoveredCells = document.querySelectorAll('.cell-cover');
@@ -177,28 +191,32 @@ function cellClicked(elCell, i, j, e) {
   }
 }
 
+//Right click actions
 function cellMarked(elCell, i, j) {
+  if (gBoard[i][j].isShown) return;
   if (!gBoard[i][j].isMarked) {
-    if (gGame.markedCount === gLevel.MINES) return;
+    if (gGame.markedCount >= gLevel.MINES) return;
     //modal
     gBoard[i][j].isMarked = true;
     gGame.markedCount++;
     // DOM
-    elCell.innerText = FLAG;
+    elCell.innerText = FLAG; //put FLAG
   } else {
     //modal
     gBoard[i][j].isMarked = false;
     gGame.markedCount--;
     // DOM
-    elCell.innerText = EMPTY;
+    elCell.innerText = ''; //remove flag
   }
 
-  var elFlagscounter = document.querySelector('.flags-counter');
+  var elFlagscounter = document.querySelector('.flags-counter span');
   elFlagscounter.innerText = gLevel.MINES - gGame.markedCount;
   checkGameOver(i, j);
 }
 
+// Left click actions
 function cellReveales(elCell, i, j) {
+  //If the cell is already with flag or shown, dont do anything
   if (gBoard[i][j].isMarked || gBoard[i][j].isShown) return;
   //modal
   gBoard[i][j].isShown = true;
@@ -206,17 +224,22 @@ function cellReveales(elCell, i, j) {
   // DOM
   elCell.classList.remove('cell-cover');
   var cellType = elCell.dataset.celltype;
-  elCell.innerText = cellType;
+  elCell.innerText = cellType; // The text on the revealed cell
 
-  if (gBoard[i][j].isMine) {
+  // If stepped on mine
+  if (gBoard[i][j].isMine === true) {
     checkGameOver(i, j);
+
+    // If empty cell, reveale all neighbors
   } else if (gBoard[i][j].minesAroundCount === 0) {
+    checkGameOver(i, j);
     var negs = getNegs(gLevel.SIZE, i, j);
-    console.log('negs', negs);
     for (var x = 0; x < negs.length; x++) {
       //Model
       var currNeg = negs[x];
       var neg = gBoard[currNeg.i][currNeg.j];
+
+      //if the neighbor is not revealed, open it
       if (neg.isShown === false) {
         neg.isShown = true;
         gGame.shownCount++;
@@ -225,41 +248,69 @@ function cellReveales(elCell, i, j) {
           `.cell-${currNeg.i}-${currNeg.j}`
         );
         elNegCell.classList.remove('cell-cover');
+        var cellType = elNegCell.dataset.celltype;
+        elNegCell.innerText = cellType;
       }
-      console.log('gGame.shownCount', gGame.shownCount);
     }
-    checkGameOver(i, j);
-  } else if (gBoard[i][j].minesAroundCount !== 0) {
+    // if cell is 1 or 2
+  } else if (
+    gBoard[i][j].minesAroundCount === 1 ||
+    gBoard[i][j].minesAroundCount === 2
+  ) {
     checkGameOver(i, j);
   }
 }
 
 function checkGameOver(i, j) {
   var cellsAmount = gLevel.SIZE ** 2;
-  //When loosing
+  //When loosing first three times
   if (gBoard[i][j].isMine && gBoard[i][j].isMarked === false) {
-    for (var x = 0; x < gMines.length; x++) {
-      var otherMine = gMines[x];
-      if (otherMine.i === i && otherMine.j === j) continue;
-      var elOtherMine = document.querySelector(
-        `.cell-${otherMine.i}-${otherMine.j}`
-      );
-      elOtherMine.classList.remove('cell-cover');
-      elOtherMine.innerText = elOtherMine.dataset.celltype;
+    // check lives
+    console.log('Lives left before:', gGame.lives);
+    if (gGame.lives > 1) {
+      gGame.lives--;
+      var elLive = document.querySelector('.lives span');
+      elLive.innerText = gGame.lives;
+
+      console.log("You've stepped on a bomb");
+      console.log('Lives left after:', gGame.lives);
+
+      var elSmiley = document.querySelector('.smiley');
+      elSmiley.innerText = OOPS;
+      setTimeout(function () {
+        elSmiley.innerText = SMILEY;
+      }, 300);
+      return;
+
+    } else if (gGame.lives === 1) {
+      gGame.lives--;
+      // reveale all other mines
+      for (var x = 0; x < gMines.length; x++) {
+        var otherMine = gMines[x];
+        if (otherMine.i === i && otherMine.j === j) continue;
+        var elOtherMine = document.querySelector(
+          `.cell-${otherMine.i}-${otherMine.j}`
+        );
+        elOtherMine.classList.remove('cell-cover');
+        elOtherMine.innerText = elOtherMine.dataset.celltype;
+      }
+
+      clearInterval(gTimerInterval);
+      gTimerInterval = null;
+
+      var elSmiley = document.querySelector('.smiley');
+      elSmiley.innerText = LOOSE;
+      gGame.isOn = false;
+      console.log('Game over! you loose!');
+      var elLive = document.querySelector('.lives span');
+      elLive.innerText = gGame.lives;
     }
-    console.log('Game over! you loose');
 
-    clearInterval(gTimerInterval);
-    gTimerInterval = null;
-
-    var elSmiley = document.querySelector('.smiley');
-    elSmiley.innerText = LOOSE;
-    gGame.isOn = false;
     // When winning
   } else if (gGame.shownCount + gGame.markedCount === cellsAmount) {
     console.log("You win! You're the bomb!");
 
-    clearInterval(gTimerInterval);
+    clearInterval(gTimerInterval); // doesnt stop, check why!!!
     gTimerInterval = null;
 
     var elSmiley = document.querySelector('.smiley');
