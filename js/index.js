@@ -75,7 +75,7 @@ function getRandMines(board, size) {
 }
 
 function setMinesNegsCount(board, size) {
-  //Go through every cell
+  //Go through every cell in board
   for (var i = 0; i < size; i++) {
     for (var j = 0; j < size; j++) {
       var currI = i;
@@ -85,22 +85,35 @@ function setMinesNegsCount(board, size) {
     }
   }
 }
-// check neighbors
+// check for mines neighbors
 function minesNegsCount(board, size, currI, currJ) {
   var MinesNegsCount = 0;
+  var negs = getNegs(size, currI, currJ);
+  for (var x = 0; x < negs.length; x++) {
+    //Model
+    var currNeg = negs[x];
+    var neg = board[currNeg.i][currNeg.j];
+    if (neg.isMine) {
+      MinesNegsCount++;
+    }
+  }
+  return MinesNegsCount;
+}
+
+//Gets all neighbors
+function getNegs(size, currI, currJ) {
+  var neighbors = [];
   for (var i = currI - 1; i <= currI + 1; i++) {
     if (i < 0 || i > size - 1) continue;
     for (var j = currJ - 1; j <= currJ + 1; j++) {
       if (j < 0 || j > size - 1) continue;
-      var neighbor = board[i][j];
+      var neighbor = { i: i, j: j };
 
-      if (i === currI && j === currJ) continue;
-      if (neighbor.isMine) {
-        MinesNegsCount++;
-      }
+      if (neighbor.i === currI && neighbor.j === currJ) continue;
+      neighbors.push(neighbor);
     }
   }
-  return MinesNegsCount;
+  return neighbors;
 }
 
 function renderBoard(board) {
@@ -184,6 +197,7 @@ function cellMarked(elCell, i, j) {
   elFlagscounter.innerText = gLevel.MINES - gGame.markedCount;
   checkGameOver(i, j);
 }
+
 function cellReveales(elCell, i, j) {
   if (gBoard[i][j].isMarked || gBoard[i][j].isShown) return;
   //modal
@@ -193,7 +207,31 @@ function cellReveales(elCell, i, j) {
   elCell.classList.remove('cell-cover');
   var cellType = elCell.dataset.celltype;
   elCell.innerText = cellType;
-  checkGameOver(i, j);
+
+  if (gBoard[i][j].isMine) {
+    checkGameOver(i, j);
+  } else if (gBoard[i][j].minesAroundCount === 0) {
+    var negs = getNegs(gLevel.SIZE, i, j);
+    console.log('negs', negs);
+    for (var x = 0; x < negs.length; x++) {
+      //Model
+      var currNeg = negs[x];
+      var neg = gBoard[currNeg.i][currNeg.j];
+      if (neg.isShown === false) {
+        neg.isShown = true;
+        gGame.shownCount++;
+        //DOM
+        var elNegCell = document.querySelector(
+          `.cell-${currNeg.i}-${currNeg.j}`
+        );
+        elNegCell.classList.remove('cell-cover');
+      }
+      console.log('gGame.shownCount', gGame.shownCount);
+    }
+    checkGameOver(i, j);
+  } else if (gBoard[i][j].minesAroundCount !== 0) {
+    checkGameOver(i, j);
+  }
 }
 
 function checkGameOver(i, j) {
