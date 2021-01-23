@@ -68,7 +68,7 @@ function buildBoard(size) {
   return board;
 }
 
-function getRandMines(board, size, firstCellMineI, firstCellMineJ) {
+function getRandMines(board, size) {
   gMines = [];
 
   for (var x = 0; x < gLevel.MINES; x++) {
@@ -76,11 +76,7 @@ function getRandMines(board, size, firstCellMineI, firstCellMineJ) {
     var minePosJ = getRandomInteger(0, size);
 
     // Checking that the mine pos is not already with a mine
-    // (and not the first click that is a mine)
-    while (
-      board[minePosI][minePosJ].isMine ||
-      (minePosI === firstCellMineI && minePosJ === firstCellMineJ)
-    ) {
+    while (board[minePosI][minePosJ].isMine) {
       minePosI = getRandomInteger(0, size);
       minePosJ = getRandomInteger(0, size);
     }
@@ -213,30 +209,36 @@ function cellReveales(elCell, i, j, elCoveredCells, cellsAmount) {
 
     // If empty cell, reveale all neighbors
   } else if (gBoard[i][j].minesAroundCount === 0) {
+    expandShown(i, j);
+    
+    // if cell is a number (has mines neighbors)
+  } else if (gBoard[i][j].minesAroundCount > 0) {
     checkGameOver(i, j);
+  }
+}
 
-    var negs = getNegs(gLevel.SIZE, i, j);
-    for (var x = 0; x < negs.length; x++) {
-      //Model
-      var currNeg = negs[x];
-      var neg = gBoard[currNeg.i][currNeg.j];
-      //if the neighbor is not revealed, open it
-      if (!neg.isShown) {
-        neg.isShown = true;
-        gGame.shownCount++;
+function expandShown(i, j) {
 
-        //DOM
-        var elNegCell = document.querySelector(
-          `.cell-${currNeg.i}-${currNeg.j}`
+  checkGameOver(i, j);
+
+  var negs = getNegs(gLevel.SIZE, i, j);
+  for (var x = 0; x < negs.length; x++) {
+    //Model
+    var currNeg = negs[x];
+    var neg = gBoard[currNeg.i][currNeg.j];
+    //if the neighbor is not revealed, open it
+    if (!neg.isShown) {
+      neg.isShown = true;
+      gGame.shownCount++;
+      
+      //DOM
+      var elNegCell = document.querySelector(
+        `.cell-${currNeg.i}-${currNeg.j}`
         );
         elNegCell.classList.remove('cell-cover');
         var cellType = elNegCell.dataset.celltype;
         elNegCell.innerText = cellType;
-      }
     }
-    // if cell is a number (has mines neighbors)
-  } else if (gBoard[i][j].minesAroundCount > 0) {
-    checkGameOver(i, j);
   }
 }
 
