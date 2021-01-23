@@ -99,3 +99,6 @@ table,
   background-color: rgb(85, 83, 83);
   box-shadow: inset -2px -2px 2px 1px #343434;
 }
+.red {
+  background-color: rgb(250, 0, 0);
+}
