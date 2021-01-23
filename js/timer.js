@@ -1,0 +1,33 @@
+var gTimerInterval;
+
+function startTimer() {
+  var startTime = Date.now();
+  gTimerInterval = setInterval(getSecsPassed, 1000, startTime);
+}
+function getSecsPassed(startTime) {
+  gGame.secsPassed = parseInt((Date.now() - startTime) / 1000);
+  var elTimer = document.querySelector('.timer');
+  var printedTime = get3Digits(gGame.secsPassed);
+  elTimer.innerText = printedTime;
+}
+function resetTimer() {
+  gGame.secsPassed = 0;
+  var elTimer = document.querySelector('.timer');
+  elTimer.innerText = '000';
+}
+
+function get3Digits(seconds) {
+  if (seconds < 10) {
+    var zeros = '00';
+  } else if (seconds < 99) {
+    zeros = '0';
+  } else {
+    zeros = '';
+  }
+  return zeros + seconds;
+}
+
+function stopTimer() {
+  clearInterval(gTimerInterval);
+  gTimerInterval = null;
+}
