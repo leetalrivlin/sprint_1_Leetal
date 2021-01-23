@@ -10,7 +10,7 @@ const OOPS = '🤪';
 var gLevel = {
   SIZE: 4,
   MINES: 2,
-  BESTSCORE: 0,
+  BESTSCORE: 999,
 };
 var gBoard;
 var gGame;
@@ -29,6 +29,8 @@ function initGame() {
   renderBoard(gBoard, gLevel.SIZE);
   var elSentence = document.querySelector('.sentence');
   elSentence.style.visibility = 'hidden';
+  var elBestScore = document.querySelector('.best-score span');
+  elBestScore.innerText = gLevel.BESTSCORE;
 }
 
 function changeLevel(elLevelBtn) {
@@ -38,7 +40,11 @@ function changeLevel(elLevelBtn) {
   var levelMinesAmount = elLevelBtn.dataset.mines;
   gLevel.SIZE = levelSize;
   gLevel.MINES = levelMinesAmount;
-  restart();
+  var localBestScore = window.localStorage.getItem(`level-size-${gLevel.SIZE}`);
+  gLevel.BESTSCORE = localBestScore ? localBestScore : '999';
+  var elBestScore = document.querySelector('.best-score span');
+  elBestScore.innerText = gLevel.BESTSCORE;
+  initGame();
 }
 
 function buildBoard(size) {
@@ -69,7 +75,7 @@ function getRandMines(board, size, firstCellMineI, firstCellMineJ) {
     var minePosJ = getRandomInteger(0, size);
 
     // Checking that the mine pos is not already with a mine
-    // and not the first click that is a mine
+    // (and not the first click that is a mine)
     while (
       board[minePosI][minePosJ].isMine ||
       (minePosI === firstCellMineI && minePosJ === firstCellMineJ)
@@ -206,7 +212,7 @@ function cellReveales(elCell, i, j, elCoveredCells, cellsAmount) {
         ? true
         : false;
 
-    // If it's the first cell that is revealed and it's a mine, change board's mines places//////
+    // If it's the first cell that is revealed and it's a mine, change board's mines places
     if (gIsFirstClickMine) {
       console.log('this is the first click with a mine under');
       // getRandMines(gBoard, gLevel.SIZE, i, j);
@@ -301,6 +307,7 @@ function checkGameOver(i, j) {
     elSentence.style.color = 'white';
     elSentence.style.visibility = 'visible';
 
+    updateBestScore(gLevel.SIZE);
     stopTimer();
 
     var elSmiley = document.querySelector('.smiley');
